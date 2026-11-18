@@ -12,27 +12,46 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+
+import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# Render sets RENDER automatically. Local development keeps SQLite and DEBUG.
+IS_RENDER = os.environ.get('RENDER') == 'true'
+DEBUG = os.environ.get('DJANGO_DEBUG', '0' if IS_RENDER else '1') == '1'
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# Persist a random development key locally; production should set DJANGO_SECRET_KEY.
-KEY_FILE = BASE_DIR / '.dev-secret-key'
-if not os.environ.get('DJANGO_SECRET_KEY') and not KEY_FILE.exists():
-    KEY_FILE.write_text(get_random_secret_key())
-    KEY_FILE.chmod(0o600)
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or KEY_FILE.read_text().strip()
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if not DEBUG or IS_RENDER:
+        raise ImproperlyConfigured('Set DJANGO_SECRET_KEY in the production environment.')
+    KEY_FILE = BASE_DIR / '.dev-secret-key'
+    if not KEY_FILE.exists():
+        KEY_FILE.write_text(get_random_secret_key())
+        KEY_FILE.chmod(0o600)
+    SECRET_KEY = KEY_FILE.read_text().strip()
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
+    'DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]'
+).split(',') if host.strip()]
+RENDER_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
+    CSRF_TRUSTED_ORIGINS = [f'https://{RENDER_HOSTNAME}']
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]').split(',')
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    # Render terminates TLS and forwards the original request protocol.
+    if IS_RENDER:
+        SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
@@ -49,6 +68,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -80,12 +100,20 @@ WSGI_APPLICATION = 'campus_skillswap.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if IS_RENDER and not DATABASE_URL:
+    raise ImproperlyConfigured('Set DATABASE_URL to the Render PostgreSQL internal URL.')
+if DATABASE_URL:
+    DATABASES = {'default': dj_database_url.parse(
+        DATABASE_URL, conn_max_age=600, conn_health_checks=True
+    )}
+    if IS_RENDER and DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql':
+        raise ImproperlyConfigured('Render requires PostgreSQL for persistent application data.')
+else:
+    DATABASES = {'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+    }}
 
 
 # Password validation
@@ -122,7 +150,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -134,3 +162,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'skill_list'
+
+# Hashed and compressed assets are generated during the Render build.
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}

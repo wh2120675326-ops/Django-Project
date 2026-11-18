@@ -88,3 +88,7 @@ python -m pip check
 正式部署前应配置 `DJANGO_SECRET_KEY`、`DJANGO_DEBUG=0`、逗号分隔的 `DJANGO_ALLOWED_HOSTS`，设置 HTTPS、安全 Cookie、静态资源托管及数据库备份，并执行 `python manage.py check --deploy`。当前配置与 `runserver` 用于本地开发，不是生产部署方案。
 
 详细步骤见 [中文学习指南](docs/学习指南.md)。
+
+## Render 公网部署
+
+已支持本地 SQLite、Render PostgreSQL 自动切换，并提供 Gunicorn、WhiteNoise、构建与启动脚本。按照 [Render 网页部署指南](docs/Render部署.md) 在 VS Code 上传代码后，通过 Render 网页创建数据库及 Web Service，无需自己输入终端命令。云端依赖 `DJANGO_SECRET_KEY` 和 `DATABASE_URL`，默认关闭 DEBUG；自动读取 Render 分配的主机名。未设置数据库时会拒绝启动，避免误用临时 SQLite 丢失数据。
