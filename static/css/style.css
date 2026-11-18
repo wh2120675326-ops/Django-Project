@@ -1,0 +1,27 @@
+/* Bootstrap handles the grid and forms; these rules add the campus identity. */
+:root { --brand: #4856bd; --ink: #202541; --muted: #636b7d; }
+body { background: #f7f8fc; color: var(--ink); font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }
+a { color: var(--brand); }
+.navbar-brand { color: var(--ink); font-size: 1.1rem; }
+.brand-icon { display: inline-grid; place-items: center; width: 34px; height: 34px; margin-right: 7px; border-radius: 11px; color: white; background: var(--brand); }
+.nav-link { color: #4d5369; font-size: .9rem; }
+.btn { border-radius: 10px; padding: .65rem 1.1rem; font-weight: 600; }
+.btn-sm { padding: .45rem .75rem; }
+.btn-primary { --bs-btn-bg: #4856bd; --bs-btn-border-color: #4856bd; --bs-btn-hover-bg: #36439c; --bs-btn-hover-border-color: #36439c; }
+.btn-outline-primary { --bs-btn-color: #4856bd; --bs-btn-border-color: #4856bd; --bs-btn-hover-bg: #4856bd; --bs-btn-hover-border-color: #4856bd; }
+.hero { background: linear-gradient(115deg, #e8eafd, #e4f4ee); border: 1px solid #dce3ed; border-radius: 24px; }
+.hero p { max-width: 570px; color: #4d566d; }
+.eyebrow { font-size: .7rem; letter-spacing: .14em; font-weight: 750; color: #4856a5; }
+.card, .search-panel, .empty-state { border: 1px solid #e2e5ef; border-radius: 16px; background: white; box-shadow: 0 4px 18px #20254104; }
+.skill-card { transition: transform .18s, box-shadow .18s; }
+.skill-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px #2025410d; }
+.skill-title { text-decoration: none; color: var(--ink); line-height: 1.4; overflow-wrap: anywhere; }
+.skill-title:hover { color: var(--brand); }
+.category-badge { background: #edf0ff; color: #4351a8; font-weight: 600; padding: .5rem .7rem; white-space: normal; }
+.form-control, .form-select { border-radius: 10px; border-color: #d8dce7; padding: .7rem; }
+.form-control:focus, .form-select:focus { border-color: #7a86d9; box-shadow: 0 0 0 .2rem #4856bd22; }
+.form-shell { max-width: 730px; }.auth-shell { max-width: 480px; }
+.back-link { text-decoration: none; font-size: .9rem; }
+.description { line-height: 1.8; overflow-wrap: anywhere; }.rating { color: #8a5a00; font-weight: 650; }
+@media (prefers-reduced-motion: reduce) { .skill-card { transition: none; }.skill-card:hover { transform: none; } }
