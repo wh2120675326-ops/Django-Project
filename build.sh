@@ -3,7 +3,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Optional local helper. Render uses the PPT command directly:
+# pip install -r requirements.txt
 python -m pip install -r requirements.txt
-python manage.py collectstatic --noinput
-# PostgreSQL is shared across deployments; migrations preserve existing data.
-python manage.py migrate --noinput

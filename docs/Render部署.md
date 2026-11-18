@@ -30,8 +30,8 @@ New → Web Service → Git Provider → 连接自己的 GitHub 仓库 `Django-P
 | Branch | main |
 | Region | 与数据库相同 |
 | Root Directory | 留空，manage.py 在仓库根目录 |
-| Build Command | `bash build.sh` |
-| Start Command | `bash start.sh` |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | `./start.sh` |
 | Instance Type | Free（确认不是收费规格） |
 
 根目录 `.python-version` 已指定 Python 3.13，无需另填 PYTHON_VERSION。如果已有这个环境变量，删除冲突值或使用兼容的完整 3.13.x 版本。
@@ -46,7 +46,7 @@ New → Web Service → Git Provider → 连接自己的 GitHub 仓库 `Django-P
 
 Render 自动设置 RENDER 和 RENDER_EXTERNAL_HOSTNAME。代码自动允许当前服务的实际域名，无需填写通配符 ALLOWED_HOSTS。自定义域名以后另行配置。
 
-确认配置和费用后，由你点击 Deploy Web Service。构建会安装依赖、收集样式并迁移 PostgreSQL；启动使用 Gunicorn。无需上传 db.sqlite3，无需在网页终端手动建表。
+确认配置和费用后，由你点击 Deploy Web Service。构建阶段安装依赖；start.sh 在启动时收集样式、迁移 PostgreSQL，成功后再运行 Gunicorn。无需上传 db.sqlite3，无需在网页终端手动建表。
 
 ## 5. 验证
 
@@ -62,7 +62,7 @@ Render 自动设置 RENDER 和 RENDER_EXTERNAL_HOSTNAME。代码自动允许当�
 - 数据库连接失败：检查 DATABASE_URL、数据库状态及两个服务的区域。不要公开连接串。
 - Missing DJANGO_SECRET_KEY / DATABASE_URL：补上对应环境变量，再部署。
 - DisallowedHost：核对 RENDER_EXTERNAL_HOSTNAME 是否由 Render 提供，以及是否运行最新代码。
-- 样式缺失：检查 collectstatic 构建日志和 WhiteNoise 配置。
+- 样式缺失：检查 collectstatic 启动日志和 WhiteNoise 配置。
 - 首页加载慢：免费 Web Service 休眠后首次访问可能需要启动。
 
 本地已验证配置、静态文件和应用测试；真正的 PostgreSQL 连通性和 Render 构建，必须在服务创建并部署后验证。
